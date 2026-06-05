@@ -1,22 +1,59 @@
 # ternary-btree
 
-B-tree with ternary (left/middle/right) branching over keys ordered as {-1, 0, +1}.
+**B-tree with ternary branching: 3-way comparison (less/equal/greater) at every node.**
 
-Each internal node holds up to 2 keys and 3 child pointers using pre-emptive top-down splitting.
+Binary search trees have 2 children per node. Ternary B-trees have 3 — left (less than), middle (equal), right (greater than). This means keys with the same value accumulate in the middle child, handling duplicates naturally without extra bookkeeping.
 
-## Features
-- `TernaryBTree<K, V>` — generic map
-- `insert`, `search`, `delete` with rebalancing (borrow/merge)
-- `range(lo, hi)` — sorted range query
-- `iter()` — full sorted traversal
-- 15 tests
+---
 
-## Usage
+## Why Ternary Branching?
+
+**Fewer levels**: Height = ⌈log₃(n)⌉ vs ⌈log₂(n)⌉. For 1 million keys:
+- Binary: 20 levels
+- Ternary: 13 levels (35% fewer)
+
+**Natural duplicate handling**: Equal keys go to the middle child. No need for secondary indices or count fields.
+
+**3-way comparison**: Rust's `Ord` trait already returns `Ordering::{Less, Equal, Greater}` — a ternary result! Ternary B-trees use this directly.
+
+---
+
+## Architecture
+
+- **`TernaryBTree<K, V>`** — Generic B-tree with ternary branching
+  - `insert(key, value)` — Insert with 3-way routing
+  - `search(key)` → `Option<&V>` — Lookup by key
+  - `remove(key)` → `Option<V>` — Delete with rebalancing
+  - `range(min, max)` → Range query iterator
+  - `len()`, `is_empty()`, `height()` — Tree statistics
+
+---
+
+## Quick Start
+
 ```rust
+use ternary_btree::TernaryBTree;
+
 let mut tree = TernaryBTree::new();
-tree.insert(-1i32, "neg");
-tree.insert(0, "zero");
-tree.insert(1, "pos");
-assert_eq!(tree.search(&0), Some(&"zero"));
-let range = tree.range(&-1, &0);
+tree.insert(5, "five");
+tree.insert(3, "three");
+tree.insert(7, "seven");
+tree.insert(5, "five-dup"); // duplicate → middle child
+
+assert_eq!(tree.search(&5), Some(&"five-dup"));
+assert_eq!(tree.search(&3), Some(&"three"));
+assert_eq!(tree.height(), 1); // shallow!
 ```
+
+---
+
+## Ecosystem
+
+- **ternary-heap** — Ternary priority queue (complementary data structure)
+- **ternary-sort** — Sorting optimized for ternary data
+- **ternary-search** — Search algorithms on ternary structures
+- **ternary-index** — Inverted index with ternary routing
+
+## License
+
+MIT

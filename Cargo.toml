@@ -3,6 +3,7 @@ description = "ternary-btree - SuperInstance ecosystem crate"
 repository = "https://github.com/SuperInstance/ternary-btree"
 name = "ternary-btree"
 version = "0.1.0"
+license = "MIT OR Apache-2.0"
 edition = "2021"
 
 [dependencies]
